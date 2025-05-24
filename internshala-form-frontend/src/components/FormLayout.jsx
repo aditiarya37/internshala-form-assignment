@@ -1,4 +1,3 @@
-// src/components/FormLayout.jsx
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Check, UserCircle, Edit3, ListChecks, CheckCheck } from 'lucide-react'; 
@@ -24,9 +23,9 @@ const StepIndicator = ({ currentStep }) => {
         if (isCompleted) {
           iconSizeToShow = completedIconSize;
         } else if (isActive) {
-          iconSizeToShow = step.icon === UserCircle ? 26 : 24; // UserCircle active, others active
+          iconSizeToShow = step.icon === UserCircle ? 26 : 24;
         } else {
-          iconSizeToShow = step.icon === UserCircle ? 24 : 22; // UserCircle pending, others pending
+          iconSizeToShow = step.icon === UserCircle ? 24 : 22;
         }
 
         return (
@@ -54,9 +53,6 @@ const StepIndicator = ({ currentStep }) => {
             </div>
             {index < StepsConfig.length - 1 && (
               <div className={`flex-1 h-1 mt-5 sm:mt-6 ${index < StepsConfig.length -1 ? 'mx-1 sm:mx-2 md:mx-3' : ''} rounded-full ${
-                  // Line is teal if the *next* step is completed OR if the *next* step is the current active one
-                  // currentStep > step.id + 1 means next step is completed
-                  // currentStep === step.id + 1 means next step is active
                   currentStep > step.id + 1 ? "bg-teal-500" : (currentStep === step.id + 1 ? "bg-indigo-500" : "bg-slate-300")
               }`} />
             )}
@@ -68,7 +64,6 @@ const StepIndicator = ({ currentStep }) => {
 };
 
 export default function FormLayout({ children, pageTitle, currentStep }) {
-  // ... (rest of FormLayout remains the same as your provided version)
   const pageBackgroundClass = "bg-gradient-to-br from-slate-100 via-gray-100 to-sky-100";
 
   return (

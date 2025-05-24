@@ -1,4 +1,3 @@
-// src/pages/Page1.jsx
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -7,7 +6,7 @@ import { useForm } from "../context/FormContext";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { ArrowLeft } from "lucide-react"; // Import an icon for the back button
+import { ArrowLeft } from "lucide-react";
 
 export default function Page1() {
   const { formData, updateField, updateFields } = useForm();
@@ -27,10 +26,6 @@ export default function Page1() {
   }
 
   const saveDraft = async () => {
-    // No need to save draft if all fields are empty or if it's the very first interaction and no ID exists yet.
-    // However, for simplicity and consistency with other pages, we can attempt to save.
-    // The backend should handle empty initial data gracefully if it creates a record.
-    // Or, add a check here: if (!formData.id && !Object.values(formData).some(val => typeof val === 'string' && val.trim() !== '')) return;
     
     setIsSaving(true);
     try {
@@ -41,9 +36,6 @@ export default function Page1() {
       console.log("Draft saved successfully (Page 1)", response.data);
     } catch (err) {
       console.error("Failed to save draft (Page 1):", err.response?.data || err.message);
-      // For "Go Back", we might not want to show a blocking alert,
-      // or make it less intrusive as the user is trying to leave the form.
-      // For now, keeping the alert for consistency.
       alert("Could not save draft progress. Your changes might not be saved. Proceeding with navigation...");
     } finally {
       setIsSaving(false);
@@ -63,12 +55,10 @@ export default function Page1() {
 
   async function handleGoBack(e) {
     e.preventDefault();
-    // Optionally save draft before going back to home.
-    // If the form is pristine or has an ID, saving might be desired.
-    if (formData.id || Object.values(formData).some(v => typeof v === 'string' && v && v.trim() !== '' && !['id', 'projects'].includes(v) )) { // Heuristic: save if has ID or some text field is filled
+    if (formData.id || Object.values(formData).some(v => typeof v === 'string' && v && v.trim() !== '' && !['id', 'projects'].includes(v) )) { 
         await saveDraft();
     }
-    navigate("/home"); // Navigate to the HomePage
+    navigate("/home");
   }
 
   const inputClass = (field) =>
@@ -79,7 +69,6 @@ export default function Page1() {
   return (
     <FormLayout pageTitle="Your Personal Details" currentStep={1}>
       <form onSubmit={handleNext} className="space-y-5">
-        {/* ... (all your input fields remain the same) ... */}
         <div>
           <Label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1.5">Full Name*</Label>
           <Input id="name" value={formData.name || ''} onChange={e => updateField("name", e.target.value)} className={inputClass("name")} placeholder="e.g., Jane Doe" disabled={isSaving} />
@@ -117,8 +106,7 @@ export default function Page1() {
           </div>
         </div>
 
-        {/* ADDED BUTTONS SECTION */}
-        <div className="flex flex-col sm:flex-row gap-3 pt-4 mt-6"> {/* Added mt-6 for spacing from last field */}
+        <div className="flex flex-col sm:flex-row gap-3 pt-4 mt-6"> 
           <Button 
             type="button" 
             onClick={handleGoBack} 

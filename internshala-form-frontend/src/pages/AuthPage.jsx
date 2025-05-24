@@ -1,8 +1,7 @@
-// src/pages/AuthPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'; 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,33 +14,27 @@ export default function AuthPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  // We no longer need currentUser directly from useAuth here for navigation logic
   const { login, signup, isAuthenticated, loadingAuth } = useAuth(); 
 
   useEffect(() => {
-    // Navigate if authentication state becomes true AND initial auth loading is complete
     if (!loadingAuth && isAuthenticated) {
-      console.log("AuthPage useEffect: isAuthenticated is true, navigating to /home. IsAuth:", isAuthenticated);
       navigate('/home', { replace: true });
     }
-  }, [isAuthenticated, loadingAuth, navigate]); // Removed currentUser from dependencies
+  }, [isAuthenticated, loadingAuth, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     let authResult;
     if (isLoginView) {
-      // ... (validation for login)
       if (!email || !password) {
         setError("Email and password are required.");
         setLoading(false);
         return;
       }
       authResult = await login(email, password);
-    } else { // Signup view
-      // ... (validation for signup)
+    } else { 
       if (!email.match(/^[^@]+@[^@]+\.[^@]+$/)) {
         setError("Please enter a valid email address.");
         setLoading(false);
@@ -52,15 +45,10 @@ export default function AuthPage() {
         setLoading(false);
         return;
       }
-      // Calling signup without name, as AuthContext's signup was simplified
       authResult = await signup(email, password); 
     }
-    
     setLoading(false);
-
-    if (authResult && authResult.success) { // No longer checking for authResult.user
-      console.log("AuthPage handleSubmit: Auth action successful.");
-      // Navigation is handled by the useEffect hook
+    if (authResult && authResult.success) {
     } else if (authResult) {
       setError(authResult.error || 'Authentication failed. Please try again.');
     } else {
@@ -68,45 +56,53 @@ export default function AuthPage() {
     }
   };
 
-  // ... (inputClass and JSX for the form remains the same - name input already removed) ...
   const inputClass = (hasError = false) =>
     `bg-white text-slate-900 border ${
       hasError ? "border-red-400" : "border-slate-300"
     } focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 w-full rounded-md placeholder:text-slate-400 py-2.5 px-3 text-sm`;
 
+  const pageTitle = isLoginView ? 'Welcome Back!' : 'Create Your Account';
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-gray-100 to-sky-100 flex flex-col items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-white shadow-xl rounded-xl">
-        <CardHeader className="p-6 sm:p-8 items-center border-b border-slate-200">
-            <div className="flex items-center justify-center mb-4">
-                {isLoginView ? <LogIn size={32} className="text-indigo-600" /> : <UserPlus size={32} className="text-indigo-600" />}
-            </div>
-          <CardTitle className="text-2xl sm:text-3xl font-semibold text-center text-slate-800">
-            {isLoginView ? 'Welcome Back!' : 'Create Account'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6 sm:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-gray-100 to-sky-100 text-slate-800 py-8 sm:py-12 px-4 flex flex-col items-center justify-center">
+      <Card className="w-full max-w-md bg-white border border-slate-200 shadow-xl rounded-xl overflow-hidden py-0">
+        <div className="h-1.5 bg-indigo-500"></div>
+        
+        <div className="px-6 pt-6 pb-2 sm:px-8 sm:pt-8 sm:pb-3">
+          <div className="flex items-center justify-center mb-4">
+            {isLoginView ? <LogIn size={28} className="text-indigo-600" /> : <UserPlus size={28} className="text-indigo-600" />}
+          </div>
+          <CardHeader className="p-0 mb-4 sm:mb-5">
+            <CardTitle className="text-2xl sm:text-3xl font-semibold text-center text-slate-800">
+              {pageTitle}
+            </CardTitle>
+          </CardHeader>
+        </div>
+
+        <CardContent className="px-6 pb-6 sm:px-8 sm:pb-8 pt-0">
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Name input is already removed */}
             <div>
               <Label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">Email Address</Label>
               <Input
                 id="email" type="email" value={email}
-                onChange={(e) => setEmail(e.target.value)} className={inputClass(error.toLowerCase().includes('email'))}
+                onChange={(e) => setEmail(e.target.value)} 
+                className={inputClass(error.toLowerCase().includes('email'))}
                 placeholder="you@example.com" disabled={loading} required
               />
             </div>
             <div>
-              <Label htmlFor="password"className="block text-sm font-medium text-slate-700 mb-1.5">Password</Label>
+              <Label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1.5">Password</Label>
               <Input
                 id="password" type="password" value={password}
-                onChange={(e) => setPassword(e.target.value)} className={inputClass(error.toLowerCase().includes('password'))}
+                onChange={(e) => setPassword(e.target.value)} 
+                className={inputClass(error.toLowerCase().includes('password'))}
                 placeholder="Enter your password" disabled={loading} required
               />
             </div>
-            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+            {error && <p className="text-red-500 text-sm text-center pt-1">{error}</p>}
             <Button
-              type="submit" className="w-full mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-md text-base"
+              type="submit" 
+              className="w-full mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-md text-base"
               disabled={loading} >
               {loading ? (isLoginView ? 'Logging in...' : 'Signing up...') : (isLoginView ? 'Login' : 'Sign Up')}
             </Button>

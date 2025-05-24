@@ -1,15 +1,13 @@
-// routes/users.js
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { body, validationResult } = require('express-validator');
-const bcrypt = require('bcryptjs'); // Changed from bcrypt to bcryptjs for consistency if you use both
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const authenticateToken = require('../middleware/auth'); // Assuming this is your authenticateToken middleware
+const authenticateToken = require('../middleware/auth'); 
 require('dotenv').config();
 
-// Register
 router.post('/register', [
   body('email').isEmail().withMessage('Invalid email format.').normalizeEmail(),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long.').trim()
@@ -27,16 +25,15 @@ router.post('/register', [
       data: { email, password: hashedPassword }
     });
 
-    // Use 'userId' (lowercase 'd') for consistency with typical convention and authenticateToken middleware
     const payload = { userId: user.id, email: user.email }; 
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    res.cookie('token', token, { httpOnly: true, maxAge: 3600000 }); // Optional
+    res.cookie('token', token, { httpOnly: true, maxAge: 3600000 });
 
     res.status(201).json({
       message: 'Registered successfully!',
       token,
-      user: { id: user.id, email: user.email } // Correctly sending user object
+      user: { id: user.id, email: user.email }
     });
   } catch (err) {
     console.error("Error registering user:", err);
@@ -45,9 +42,8 @@ router.post('/register', [
 });
 
 
-// Login
 router.post('/login', [
-  body('email').isEmail().withMessage('Valid email is required.').normalizeEmail(), // Changed message
+  body('email').isEmail().withMessage('Valid email is required.').normalizeEmail(),
   body('password').notEmpty().withMessage('Password is required.')
 ], async (req, res) => {
   const errors = validationResult(req);
@@ -61,42 +57,35 @@ router.post('/login', [
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ error: 'Invalid credentials!' });
 
-    // Use 'userId' (lowercase 'd') for consistency
     const payload = { userId: user.id, email: user.email }; 
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
     
-    res.cookie('token', token, { httpOnly: true, maxAge: 3600000 }); // Optional
+    res.cookie('token', token, { httpOnly: true, maxAge: 3600000 });
     
-    // **MODIFIED RESPONSE TO INCLUDE USER OBJECT**
     res.json({ 
         message: 'Login successful!', 
         token,
         user: { id: user.id, email: user.email } 
     });
   } catch (err) {
-    console.error("Error logging in:", err); // Log the actual error
+    console.error("Error logging in:", err);
     res.status(500).json({ error: 'Error logging in!' });
   }
 });
 
-// Logout
 router.post('/logout', (req, res) => {
   res.clearCookie('token');
   res.json({ message: 'Logged out' });
 });
 
-// Example protected route - /api/users/profile
 router.get('/profile', authenticateToken, async (req, res) => {
   try {
-    // authenticateToken should put { userId: '...', email: '...' } into req.user
-    // Ensure req.user.userId is used here (lowercase 'd')
     const userFromDb = await prisma.user.findUnique({
-      where: { id: req.user.userId }, // Use userId (lowercase 'd') from token payload
-      select: { id: true, email: true } // Only select necessary fields
+      where: { id: req.user.userId },
+      select: { id: true, email: true }
     });
     if (!userFromDb) return res.status(404).json({ error: 'User not found!' });
     
-    // Return in the format { user: { ... } } as expected by AuthContext
     res.json({ user: userFromDb }); 
   } catch (err) {
     console.error("Error fetching profile:", err);

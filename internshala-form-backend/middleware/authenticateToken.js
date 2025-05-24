@@ -1,10 +1,9 @@
-// middleware/authenticateToken.js
 const jwt = require('jsonwebtoken');
-require('dotenv').config(); // Make sure JWT_SECRET is in your .env file
+require('dotenv').config();
 
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Expecting "Bearer TOKEN_STRING"
+  const token = authHeader && authHeader.split(' ')[1]; 
 
   if (token == null) {
     console.log("AuthMiddleware: No token provided.");
@@ -20,14 +19,11 @@ function authenticateToken(req, res, next) {
       return res.status(403).json({ message: 'Forbidden: Invalid or malformed token.' });
     }
     
-    // --- CORRECTED CHECK HERE: Expect 'userId' (lowercase 'd') ---
     if (!userPayload || !userPayload.userId) { 
         console.error('AuthMiddleware: JWT Payload Error: userId (lowercase d) missing in token payload.', userPayload);
         return res.status(403).json({ message: 'Forbidden: Token payload invalid (missing userId).' });
     }
     
-    // req.user will now correctly have { userId: '...', email: '...' }
-    // because userPayload already has userId (lowercase d)
     req.user = userPayload; 
     console.log("AuthMiddleware: Token verified, req.user set:", req.user);
     next();

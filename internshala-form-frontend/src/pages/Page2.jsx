@@ -1,4 +1,3 @@
-// src/pages/Page2.jsx
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -7,13 +6,13 @@ import FormLayout from "@/components/FormLayout";
 import { useForm } from "../context/FormContext";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; // Ensure axios is imported
+import axios from "axios";
 
 export default function Page2() {
-  const { formData, updateField, updateFields } = useForm(); // Added updateFields
+  const { formData, updateField, updateFields } = useForm();
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
-  const [isSaving, setIsSaving] = useState(false); // For loading state
+  const [isSaving, setIsSaving] = useState(false);
 
   function validate() {
     const newErrors = {};
@@ -55,8 +54,6 @@ export default function Page2() {
 
   async function handlePrev(e) {
     e.preventDefault();
-    // For "Previous", we usually don't re-validate, just save current state.
-    // If fields are invalid, they remain so, and will be caught if user tries to go "Next" again.
     await saveDraft();
     navigate("/apply/page1");
   }
@@ -75,8 +72,6 @@ export default function Page2() {
             value={formData.isStudying === true ? "yes" : formData.isStudying === false ? "no" : ""}
             onValueChange={val => updateField("isStudying", val === "yes")}
             className="flex gap-x-6 gap-y-2 items-center flex-wrap"
-            // disabled={isSaving} // RadioGroup doesn't have a direct disabled prop. Disable individual items or wrap.
-                                  // For simplicity, not disabling radio group items during save.
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="yes" id="studying-yes" className="text-indigo-600 border-slate-400 focus:ring-indigo-500 data-[state=checked]:border-indigo-600" disabled={isSaving}/>

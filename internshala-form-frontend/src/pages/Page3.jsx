@@ -1,4 +1,3 @@
-// src/pages/Page3.jsx
 import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { CheckCircle, PlusCircle, Trash2 } from 'lucide-react';
 
-const LocalStepsConfig = [ // Ensure this matches FormLayout's StepsConfig if used for step count
+const LocalStepsConfig = [
   { id: 1, name: "Personal Info" },
   { id: 2, name: "Education" },
   { id: 3, name: "Projects" },
@@ -18,12 +17,12 @@ const LocalStepsConfig = [ // Ensure this matches FormLayout's StepsConfig if us
 ];
 
 export default function Page3() {
-  const { formData, updateField, updateFields, resetForm } = useForm(); // Added updateFields
+  const { formData, updateField, updateFields, resetForm } = useForm();
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [isSavingDraft, setIsSavingDraft] = useState(false); // For draft save loading state
-  const [isSubmittingFinal, setIsSubmittingFinal] = useState(false); // For final submission loading state
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [isSubmittingFinal, setIsSubmittingFinal] = useState(false);
 
   useEffect(() => {
     if (!Array.isArray(formData.projects) || formData.projects.length === 0) {
@@ -32,7 +31,6 @@ export default function Page3() {
   }, [formData.projects, updateField]);
 
   function validate() {
-    // ... (validate function remains the same)
     const newErrors = {};
     const projects = Array.isArray(formData.projects) ? formData.projects : [];
     const filledProjects = projects.filter(p => p.name?.trim() || p.description?.trim());
@@ -77,14 +75,14 @@ export default function Page3() {
     }
   };
 
-  function handleAddProject() { /* ... (remains same) ... */ 
+  function handleAddProject() { 
     const currentProjects = Array.isArray(formData.projects) ? [...formData.projects] : [];
     updateField("projects", [
       ...currentProjects,
       { name: "", description: "" }
     ]);
   }
-  function handleRemoveProject(idx) { /* ... (remains same) ... */ 
+  function handleRemoveProject(idx) { 
     let currentProjects = Array.isArray(formData.projects) ? [...formData.projects] : [];
     currentProjects.splice(idx, 1);
     if (currentProjects.length === 0) {
@@ -92,7 +90,7 @@ export default function Page3() {
     }
     updateField("projects", currentProjects);
   }
-  function handleProjectChange(idx, field, value) { /* ... (remains same) ... */
+  function handleProjectChange(idx, field, value) { 
     const currentProjects = Array.isArray(formData.projects) ? [...formData.projects] : [];
     while (currentProjects.length <= idx) {
         currentProjects.push({ name: "", description: "" });
@@ -109,7 +107,7 @@ export default function Page3() {
     navigate("/apply/page2");
   }
 
-  async function handleSubmit(e) { // This is the FINAL submission
+  async function handleSubmit(e) { 
     e.preventDefault();
     setIsSubmittingFinal(true); 
     const validationErrors = validate();
@@ -122,18 +120,13 @@ export default function Page3() {
 
     const projectsToSubmit = (Array.isArray(formData.projects) ? formData.projects : [])
         .filter(p => p.name?.trim() || p.description?.trim());
-    // Ensure _id is included for the final submission if it exists
     const payload = { ...formData, projects: projectsToSubmit }; 
     console.log("Submitting FINAL payload:", JSON.stringify(payload, null, 2));
 
     try {
-      // FINAL SUBMISSION to the main endpoint
       await axios.post("http://localhost:5000/api/applications", payload); 
       setSubmitSuccess(true);
-      // Optionally reset form if not navigating away immediately or if user might submit another
-      // if (resetForm) resetForm(); 
     } catch (err) {
-      // ... (error handling for final submit remains same) ...
       console.error("Submission error full object:", err);
       let alertMessage = "Failed to submit application.";
       if (err.response) {
@@ -146,7 +139,7 @@ export default function Page3() {
             try {
                 const DtoString = JSON.stringify(err.response.data);
                 if (DtoString.length < 200) alertMessage += ` Details: ${DtoString}`;
-            } catch (e) {/*ignore*/}
+            } catch (e) {}
         }
       } else if (err.request) {
         console.error("No response received:", err.request);
@@ -168,7 +161,6 @@ export default function Page3() {
   const anySavingInProgress = isSavingDraft || isSubmittingFinal;
 
   if (submitSuccess) {
-    // ... (success block remains same) ...
     const confirmationStepId = LocalStepsConfig.find(s => s.name.toLowerCase() === "confirmation")?.id || 4;
 
     return (

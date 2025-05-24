@@ -1,8 +1,7 @@
-// src/context/FormContext.jsx
 import React, { createContext, useContext, useState } from 'react';
 
 const initialFormData = {
-  id: null, // For storing the backend ID of the application
+  id: null,
   name: '',
   email: '',
   addressLine1: '',

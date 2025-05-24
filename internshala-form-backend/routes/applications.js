@@ -1,12 +1,10 @@
-// routes/applications.js
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const authenticateToken = require('../middleware/authenticateToken'); // MAKE SURE THIS PATH IS CORRECT
+const authenticateToken = require('../middleware/authenticateToken'); 
 
-// Validation rules for POST (create/update)
 const applicationValidationRules = [
   body('name').trim().notEmpty().withMessage('Name is required'),
   body('email').trim().isEmail().withMessage('Valid email is required'),
@@ -30,7 +28,6 @@ const applicationValidationRules = [
     .trim().notEmpty().withMessage('Project description is required'),
 ];
 
-// POST /api/applications (Create or Update - PROTECTED and USER-ASSOCIATED)
 router.post(
   '/',
   authenticateToken,
@@ -43,7 +40,7 @@ router.post(
 
     try {
       const { id: applicationIdFromRequest, ...dataFromRequest } = req.body;
-      const loggedInUserId = req.user.userId; // From authenticateToken middleware
+      const loggedInUserId = req.user.userId; 
 
       if (!loggedInUserId) {
         return res.status(401).json({ message: "Unauthorized: User ID not available for operation." });
@@ -59,8 +56,8 @@ router.post(
         zipcode: dataFromRequest.zipcode,
         isStudying: dataFromRequest.isStudying,
         studyingAt: dataFromRequest.isStudying ? (dataFromRequest.studyingAt || null) : null,
-        projects: dataFromRequest.projects || [], // Assuming JSON type for projects
-        userId: loggedInUserId, // Associate with the logged-in user
+        projects: dataFromRequest.projects || [], 
+        userId: loggedInUserId,
       };
       
       let application;
@@ -98,7 +95,6 @@ router.post(
   }
 );
 
-// GET /api/applications - Get applications FOR THE AUTHENTICATED USER
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const loggedInUserId = req.user.userId;
@@ -112,14 +108,13 @@ router.get('/', authenticateToken, async (req, res) => {
       },
       orderBy: { createdAt: 'desc' },
     });
-    res.json(applications); // Returns an array, even if empty
+    res.json(applications);
   } catch (error) {
     console.error('Error fetching user applications:', error);
     res.status(500).json({ error: 'Failed to fetch applications', details: error.message });
   }
 });
 
-// GET /api/applications/:id - Get a single application by ID (PROTECTED and USER-SPECIFIC)
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const { id: applicationId } = req.params;
@@ -147,7 +142,6 @@ router.get('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// DELETE /api/applications/:id - Delete a single application by ID (PROTECTED and USER-SPECIFIC)
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const { id: applicationId } = req.params;
