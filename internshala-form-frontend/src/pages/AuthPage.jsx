@@ -87,7 +87,7 @@ export default function AuthPage() {
                 id="email" type="email" value={email}
                 onChange={(e) => setEmail(e.target.value)} 
                 className={inputClass(error.toLowerCase().includes('email'))}
-                placeholder="you@example.com" disabled={loading} required
+                placeholder="Enter your email" disabled={loading} required
               />
             </div>
             <div>
