@@ -10,32 +10,43 @@ datasource db {
 }
 
 model User {
-  id           String         @id @default(auto()) @map("_id") @db.ObjectId
-  email        String         @unique
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  email        String        @unique
   password     String
-  applications Application[]
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  applications Application[] // This defines the list of applications a user can have
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }
 
 model Application {
   id           String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId       String?   // Optional: If you want to allow anonymous applications
-  user         User?     @relation(fields: [userId], references: [id])
+  
+  // --- Link to User: Made MANDATORY ---
+  userId       String    @db.ObjectId // Ensures this will be a valid MongoDB ObjectId string
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade) 
+                         // onDelete: Cascade means if a User is deleted, their Applications are also deleted.
+                         // Consider if this is desired behavior. Other options: SetNull (if userId were optional), Restrict.
+
+  // --- Form Fields ---
   name         String
-  email        String
+  email        String    // Email provided in the application form
   addressLine1 String
-  addressLine2 String?
+  addressLine2 String?   // Optional field
   city         String
   state        String
   zipcode      String
   isStudying   Boolean
-  studyingAt   String?
-  projects     Project[]
+  studyingAt   String?   // Optional, depends on isStudying
+  
+  projects     Project[] // Array of embedded Project types
+
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+
+  @@index([userId]) // Index on userId for efficient querying of user's applications
 }
 
+// Embedded type for projects
 type Project {
   name        String
   description String

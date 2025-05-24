@@ -4,38 +4,36 @@ const { body, validationResult } = require('express-validator');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const authenticateToken = require('../middleware/authenticateToken'); // MAKE SURE THIS PATH IS CORRECT
 
-// Validation rules (these will apply to both drafts and final submissions)
-// You might want to make some fields optional for drafts if needed,
-// but for now, let's keep them. The frontend will send what it has.
+// Validation rules for POST (create/update)
 const applicationValidationRules = [
   body('name').trim().notEmpty().withMessage('Name is required'),
   body('email').trim().isEmail().withMessage('Valid email is required'),
   body('addressLine1').trim().notEmpty().withMessage('Address Line 1 is required'),
-  // addressLine2 is optional, no specific rule needed unless you want to enforce string etc.
   body('city').trim().notEmpty().withMessage('City is required'),
   body('state').trim().notEmpty().withMessage('State is required'),
-  body('zipcode').trim().notEmpty().withMessage('Zipcode is required'), // Add .isLength({ min: 5, max: 6 }) if desired
-  
-  // Ensure isStudying is explicitly true or false if present, or allow it to be initially null from frontend
-  // The frontend sends `false` by default, so `isBoolean` should work.
+  body('zipcode').trim().notEmpty().withMessage('Zipcode is required'),
   body('isStudying').isBoolean().withMessage('isStudying must be true or false'),
-  
   body('studyingAt').custom((value, { req }) => {
-    if (req.body.isStudying === true && (!value || value.trim() === '')) {
+    if (req.body.isStudying === true && (!value || String(value).trim() === '')) {
       throw new Error('studyingAt is required if isStudying is true');
     }
     return true;
   }),
-  // Allow projects to be an empty array for initial drafts
-  body('projects').optional().isArray().withMessage('Projects must be an array'),
-  body('projects.*.name').if(body('projects').exists({checkFalsy: false})).notEmpty().withMessage('Project name is required'),
-  body('projects.*.description').if(body('projects').exists({checkFalsy: false})).notEmpty().withMessage('Project description is required'),
+  body('projects').optional({ checkFalsy: true }).isArray().withMessage('Projects must be an array or null/undefined'),
+  body('projects.*.name')
+    .if(body('projects').exists({ checkFalsy: false }).isArray({ min: 1 }))
+    .trim().notEmpty().withMessage('Project name is required'),
+  body('projects.*.description')
+    .if(body('projects').exists({ checkFalsy: false }).isArray({ min: 1 }))
+    .trim().notEmpty().withMessage('Project description is required'),
 ];
 
-// POST /api/applications (Handles CREATE and UPDATE/DRAFT saves)
+// POST /api/applications (Create or Update - PROTECTED and USER-ASSOCIATED)
 router.post(
-  '/', // This will be the endpoint for both draft and final saves
+  '/',
+  authenticateToken,
   applicationValidationRules,
   async (req, res) => {
     const errors = validationResult(req);
@@ -44,73 +42,143 @@ router.post(
     }
 
     try {
-      const { id, ...dataToSave } = req.body; // Prisma uses 'id', not '_id' by default
-                                            // If your Prisma model explicitly uses _id, adjust this.
+      const { id: applicationIdFromRequest, ...dataFromRequest } = req.body;
+      const loggedInUserId = req.user.userId; // From authenticateToken middleware
 
+      if (!loggedInUserId) {
+        return res.status(401).json({ message: "Unauthorized: User ID not available for operation." });
+      }
+
+      const applicationPayload = {
+        name: dataFromRequest.name,
+        email: dataFromRequest.email,
+        addressLine1: dataFromRequest.addressLine1,
+        addressLine2: dataFromRequest.addressLine2 || null,
+        city: dataFromRequest.city,
+        state: dataFromRequest.state,
+        zipcode: dataFromRequest.zipcode,
+        isStudying: dataFromRequest.isStudying,
+        studyingAt: dataFromRequest.isStudying ? (dataFromRequest.studyingAt || null) : null,
+        projects: dataFromRequest.projects || [], // Assuming JSON type for projects
+        userId: loggedInUserId, // Associate with the logged-in user
+      };
+      
       let application;
 
-      if (id) {
-        // If an ID is provided, attempt to update
+      if (applicationIdFromRequest) {
+        const existingApplication = await prisma.application.findUnique({
+          where: { id: String(applicationIdFromRequest) },
+        });
+
+        if (!existingApplication) {
+          return res.status(404).json({ error: `Application with ID ${applicationIdFromRequest} not found.` });
+        }
+        if (existingApplication.userId !== loggedInUserId) {
+          return res.status(403).json({ error: "Forbidden: You can only update your own applications." });
+        }
+
         application = await prisma.application.update({
-          where: { id: String(id) }, // Ensure ID is a string if it's a CUID/UUID
-          data: {
-            name: dataToSave.name,
-            email: dataToSave.email,
-            addressLine1: dataToSave.addressLine1,
-            addressLine2: dataToSave.addressLine2,
-            city: dataToSave.city,
-            state: dataToSave.state,
-            zipcode: dataToSave.zipcode,
-            isStudying: dataToSave.isStudying,
-            studyingAt: dataToSave.studyingAt,
-            // For projects, Prisma's default update behavior for nested relations can be tricky.
-            // A simple update like this will replace the entire projects array.
-            // If you need more granular updates (add one, remove one), it's more complex.
-            // For a full form data update/draft, replacing the array is often acceptable.
-            projects: {
-                // If projects are separate models linked by a relation,
-                // you might need to delete existing and create new ones, or use nested writes.
-                // Assuming a simple JSON array field or a relation where replacing is okay.
-                // If 'projects' is a JSON type in Prisma:
-                set: dataToSave.projects || [],
-                // If 'projects' is a related model, you'd use nested writes, e.g.,
-                // deleteMany: {}, // Delete old projects
-                // create: dataToSave.projects.map(p => ({ name: p.name, description: p.description })) // Create new
-            },
-          },
+          where: { id: String(applicationIdFromRequest) },
+          data: applicationPayload,
         });
-        res.status(200).json(application); // OK for update
+        return res.status(200).json(application);
       } else {
-        // No ID provided, create a new application
         application = await prisma.application.create({
-          data: {
-            name: dataToSave.name,
-            email: dataToSave.email,
-            addressLine1: dataToSave.addressLine1,
-            addressLine2: dataToSave.addressLine2,
-            city: dataToSave.city,
-            state: dataToSave.state,
-            zipcode: dataToSave.zipcode,
-            isStudying: dataToSave.isStudying,
-            studyingAt: dataToSave.studyingAt,
-            // If 'projects' is a JSON type in Prisma:
-            projects: dataToSave.projects || [],
-            // If 'projects' is a related model:
-            // projects: {
-            //   create: dataToSave.projects.map(p => ({ name: p.name, description: p.description }))
-            // },
-          },
+          data: applicationPayload,
         });
-        res.status(201).json(application); // Created
+        return res.status(201).json(application);
       }
     } catch (error) {
       console.error('Error saving application/draft:', error);
-      if (error.code === 'P2025' && id) { // Prisma error code for "Record to update not found"
-        return res.status(404).json({ error: `Application with ID ${id} not found for update.` });
+      if (error.code === 'P2025' && req.body.id) {
+        return res.status(404).json({ error: `Application with ID ${req.body.id} not found for update.` });
       }
-      res.status(500).json({ error: 'Failed to save application/draft' });
+      res.status(500).json({ error: 'Failed to save application/draft', details: error.message });
     }
   }
 );
+
+// GET /api/applications - Get applications FOR THE AUTHENTICATED USER
+router.get('/', authenticateToken, async (req, res) => {
+  try {
+    const loggedInUserId = req.user.userId;
+    if (!loggedInUserId) {
+      return res.status(401).json({ message: "Unauthorized: User ID not available." });
+    }
+
+    const applications = await prisma.application.findMany({
+      where: {
+        userId: loggedInUserId,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json(applications); // Returns an array, even if empty
+  } catch (error) {
+    console.error('Error fetching user applications:', error);
+    res.status(500).json({ error: 'Failed to fetch applications', details: error.message });
+  }
+});
+
+// GET /api/applications/:id - Get a single application by ID (PROTECTED and USER-SPECIFIC)
+router.get('/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id: applicationId } = req.params;
+    const loggedInUserId = req.user.userId;
+
+    if (!loggedInUserId) {
+      return res.status(401).json({ message: "Unauthorized: User ID not available." });
+    }
+
+    const application = await prisma.application.findUnique({
+      where: { id: String(applicationId) },
+    });
+
+    if (!application) {
+      return res.status(404).json({ error: `Application with ID ${applicationId} not found.` });
+    }
+
+    if (application.userId !== loggedInUserId) {
+      return res.status(403).json({ error: "Forbidden: You can only view your own applications." });
+    }
+    res.json(application);
+  } catch (error) {
+    console.error('Error fetching single application:', error);
+    res.status(500).json({ error: 'Failed to fetch application', details: error.message });
+  }
+});
+
+// DELETE /api/applications/:id - Delete a single application by ID (PROTECTED and USER-SPECIFIC)
+router.delete('/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id: applicationId } = req.params;
+    const loggedInUserId = req.user.userId;
+
+    if (!loggedInUserId) {
+      return res.status(401).json({ message: "Unauthorized: User ID not available." });
+    }
+
+    const applicationToDelete = await prisma.application.findUnique({
+        where: { id: String(applicationId) }
+    });
+
+    if (!applicationToDelete) {
+        return res.status(404).json({ error: `Application with ID ${applicationId} not found.` });
+    }
+    if (applicationToDelete.userId !== loggedInUserId) {
+        return res.status(403).json({ error: "Forbidden: You can only delete your own applications." });
+    }
+
+    await prisma.application.delete({
+      where: { id: String(applicationId) },
+    });
+    res.status(200).json({ message: `Application with ID ${applicationId} deleted successfully.` });
+  } catch (error) {
+    console.error('Error deleting application:', error);
+    if (error.code === 'P2025') {
+        return res.status(404).json({ error: `Application with ID ${req.params.id} not found for deletion.` });
+    }
+    res.status(500).json({ error: 'Failed to delete application', details: error.message });
+  }
+});
 
 module.exports = router;

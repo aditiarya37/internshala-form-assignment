@@ -50,7 +50,7 @@ export default function Page2() {
       return;
     }
     await saveDraft();
-    navigate("/page3");
+    navigate("/apply/page3");
   }
 
   async function handlePrev(e) {
@@ -58,7 +58,7 @@ export default function Page2() {
     // For "Previous", we usually don't re-validate, just save current state.
     // If fields are invalid, they remain so, and will be caught if user tries to go "Next" again.
     await saveDraft();
-    navigate("/page1");
+    navigate("/apply/page1");
   }
   
   const inputClass = (field) =>

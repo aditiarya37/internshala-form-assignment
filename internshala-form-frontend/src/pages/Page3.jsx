@@ -106,7 +106,7 @@ export default function Page3() {
   async function handlePrev(e) {
     e.preventDefault();
     await saveDraft();
-    navigate("/page2");
+    navigate("/apply/page2");
   }
 
   async function handleSubmit(e) { // This is the FINAL submission
