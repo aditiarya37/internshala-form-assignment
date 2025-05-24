@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post('http://localhost:5000/api/users/login', { email, password });
+      const response = await axios.post('https://internshala-form.onrender.com/api/users/login', { email, password });
       if (response.data && response.data.token) {
         const newToken = response.data.token;
         localStorage.setItem('token', newToken);
@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }) => {
   const signup = async (email, password) => { 
     try {
       const payload = { email, password };
-      const response = await axios.post('http://localhost:5000/api/users/register', payload);
+      const response = await axios.post('https://internshala-form.onrender.com/api/users/register', payload);
       if (response.data && response.data.token) {
         const newToken = response.data.token;
         localStorage.setItem('token', newToken);

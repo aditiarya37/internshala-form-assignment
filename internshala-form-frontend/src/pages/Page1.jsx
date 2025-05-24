@@ -29,7 +29,7 @@ export default function Page1() {
     
     setIsSaving(true);
     try {
-      const response = await axios.post("http://localhost:5000/api/applications", formData);
+      const response = await axios.post("https://internshala-form.onrender.com/api/applications", formData);
       if (response.data && (response.data.id || response.data._id)) {
         updateFields(response.data); 
       }

@@ -28,7 +28,7 @@ export default function Page2() {
   const saveDraft = async () => {
     setIsSaving(true);
     try {
-      const response = await axios.post("http://localhost:5000/api/applications", formData);
+      const response = await axios.post("https://internshala-form.onrender.com/api/applications", formData);
       if (response.data && response.data._id) {
         updateFields(response.data);
       }

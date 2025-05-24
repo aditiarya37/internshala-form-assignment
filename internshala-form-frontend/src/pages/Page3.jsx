@@ -62,7 +62,7 @@ export default function Page3() {
   const saveDraft = async () => {
     setIsSavingDraft(true);
     try {
-      const response = await axios.post("http://localhost:5000/api/applications", formData);
+      const response = await axios.post("https://internshala-form.onrender.com/api/applications", formData);
       if (response.data && response.data._id) {
         updateFields(response.data);
       }
@@ -124,7 +124,7 @@ export default function Page3() {
     console.log("Submitting FINAL payload:", JSON.stringify(payload, null, 2));
 
     try {
-      await axios.post("http://localhost:5000/api/applications", payload); 
+      await axios.post("https://internshala-form.onrender.com/api/applications", payload); 
       setSubmitSuccess(true);
     } catch (err) {
       console.error("Submission error full object:", err);

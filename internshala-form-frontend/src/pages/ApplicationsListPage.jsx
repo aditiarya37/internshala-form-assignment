@@ -44,7 +44,7 @@ export default function ApplicationsListPage() {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get('http://localhost:5000/api/applications');
+        const response = await axios.get('https://internshala-form.onrender.com/api/applications');
         setApplications(response.data);
       } catch (err) {
         let errorMessage = "Could not load applications. Please try again.";
@@ -73,7 +73,7 @@ export default function ApplicationsListPage() {
     setActionLoading(appId);
     setError(null);
     try {
-      const response = await axios.get(`http://localhost:5000/api/applications/${appId}`);
+      const response = await axios.get(`https://internshala-form.onrender.com/api/applications/${appId}`);
       if (response.data) {
         const appDataForForm = {
           ...response.data,
@@ -101,7 +101,7 @@ export default function ApplicationsListPage() {
       setActionLoading(appId);
       setError(null);
       try {
-        await axios.delete(`http://localhost:5000/api/applications/${appId}`);
+        await axios.delete(`https://internshala-form.onrender.com/api/applications/${appId}`);
         setApplications(prev => prev.filter(app => app.id !== appId));
         if (expandedAppId === appId) setExpandedAppId(null);
       } catch (delError) {
