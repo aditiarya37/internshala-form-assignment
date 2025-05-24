@@ -50,6 +50,7 @@ This project is an internship assignment for Internshala, designed to demonstrat
 
 ## Folder Structure
 
+```
 internshala-form/
 ├── internshala-form-backend/      # Backend (Node.js, Express, Prisma)
 │   ├── routes/
@@ -63,7 +64,7 @@ internshala-form/
 │   ├── index.html
 │   └── package.json
 └── README.md
-
+```
 
 ---
 
@@ -151,15 +152,15 @@ internshala-form/
     <th>Signup</th>
   </tr>
   <tr>
-    <td><img src="/screenshots/Login.jpeg" width="500" alt="Login" /></td>
-    <td><img src="/screenshots/Signup.jpeg" width="500" alt="Signup" /></td>
+    <td><img src="/internshala-form-frontend/src/screenshots/Login.jpeg" width="500" alt="Login" /></td>
+    <td><img src="/internshala-form-frontend/src/screenshots/Signup.jpeg" width="500" alt="Signup" /></td>
   </tr>
   <tr>
     <th colspan="2">Homepage</th>
   </tr>
   <tr>
     <td colspan="2">
-      <img src="/screenshots/Home_Page.jpeg" width="1000" alt="Home Page" />
+      <img src="/internshala-form-frontend/src/screenshots/Home_Page.jpeg" width="1000" alt="Home Page" />
     </td>
   </tr>
   <tr>
@@ -168,10 +169,10 @@ internshala-form/
   </tr>
   <tr>
   <td>
-  <img src="/screenshots/Personal_Details.jpeg" width="500" alt="Personal Details" />
+  <img src="/internshala-form-frontend/src/screenshots/Personal_Details.jpeg" width="500" alt="Personal Details" />
   </td>
   <td>
-  <img src="/screenshots/Educational_Background.jpeg" width="500" alt="Educational Background" />
+  <img src="/internshala-form-frontend/src/screenshots/Educational_Background.jpeg" width="500" alt="Educational Background" />
   </td>
   </tr>
   <tr>
@@ -180,10 +181,10 @@ internshala-form/
   </tr>
   <tr>
   <td>
-  <img src="/screenshots/Projects_And_Experience.jpeg" width="500" alt="Projects & Experience" />
+  <img src="/internshala-form-frontend/src/screenshots/Projects_And_Experience.jpeg" width="500" alt="Projects & Experience" />
   </td>
   <td>
-  <img src="/screenshots/Application_Submitted.jpeg" width="500" alt="Application Submitted" />
+  <img src="/internshala-form-frontend/src/screenshots/Application_Submitted.jpeg" width="500" alt="Application Submitted" />
   </td>
   </tr>
   <tr>
@@ -191,7 +192,7 @@ internshala-form/
   </tr>
   <tr>
     <td colspan="2">
-      <img src="/screenshots/My_Applications.jpeg" width="1000" alt="My Applications" />
+      <img src="/internshala-form-frontend/src/screenshots/My_Applications.jpeg" width="1000" alt="My Applications" />
     </td>
   </tr>
 </table>
